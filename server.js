@@ -1,8 +1,10 @@
 const express = require('express')
 const fs = require('fs');
-const app = express();
+const crypto = require('crypto')
 const bodyparser = require("body-parser");
 const Conexion = require("./db");
+const app = express();
+
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -23,8 +25,10 @@ app.get('/', function (req, res) {
 
 app.post("/", (req, res) => {
     let conexion = new Conexion();
-    let consulta = "select * from cliente where username=?";
-    conexion.con.query(consulta, [req.body.username], (error, results, fields) => {
+    let pass= crypto.createHash('md5').update(req.body.password).digest("hex")
+
+    let consulta = "select * from cliente where username=? and password=?";
+    conexion.con.query(consulta, [req.body.username,pass], (error, results, fields) => {
         if (error) {
             fs.readFile("./public/view/login.html", (err, data) => {
                 data = data.toString().trim().replace("##nombre##", "Login de Página").replace("##err##", error.message);
